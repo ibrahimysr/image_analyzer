@@ -1,0 +1,79 @@
+{% extends 'analysis/base.html' %}
+{% load static %}
+
+{% block title %}Analiz Geçmişi{% endblock %}
+{% block header %}Analiz Geçmişi{% endblock %}
+
+{% block content %}
+    {% if history %}
+        <div class="history-container">
+            {% for result in history %}
+                <div class="card history-card">
+                    <div class="card-header">
+                        <h3>{{ result.object_name|default:"Bilinmeyen Nesne" }}</h3>
+                        <span class="date-badge">{{ result.created_at|date:"d M Y H:i" }}</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- <div class="history-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Kaynak:</span>
+                                <span class="meta-value">{{ result.get_source_type_display }}</span>
+                            </div>
+                            <div class="meta-item source-input">
+                                <span class="meta-value truncate">{{ result.source_input|truncatechars:50 }}</span>
+                            </div>
+                        </div> -->
+
+                        <div class="keywords-section">
+                            <h4>Anahtar Kelimeler</h4>
+                            <div class="tag-list">
+                                {% for keyword in result.keywords %}
+                                    <span class="tag">{{ keyword }}</span>
+                                {% empty %}
+                                    <span class="no-data">Anahtar kelime bulunamadı</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <h4>Özet</h4>
+                            <p>{{ result.summary|default:"Özet bulunamadı"|truncatewords:30 }}</p>
+                        </div>
+
+                        <div class="history-actions">
+                            {% if result.image_file %}
+                                <a href="{{ result.image_file.url }}" target="_blank" class="btn btn-secondary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    Görüntüyü Gör
+                                </a>
+                            {% elif result.source_type == 'U' %}
+                                <a href="{{ result.source_input }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                    Görüntü URL'si
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3>Henüz Analiz Geçmişi Bulunmuyor</h3>
+            <p>Yeni bir analiz yaparak başlayabilirsiniz.</p>
+            <a href="{% url 'analyze' %}" class="btn btn-primary">Yeni Analiz Yap</a>
+        </div>
+    {% endif %}
+{% endblock %}

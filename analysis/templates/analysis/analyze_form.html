@@ -1,0 +1,205 @@
+{% extends 'analysis/base.html' %}
+{% load static %}
+
+{% block title %}Yeni Görüntü Analizi{% endblock %}
+{% block header %}Yeni Görüntü Analizi{% endblock %}
+
+{% block extra_head %}
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    {% if error_message %}
+        <div class="alert alert-danger">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span><strong>Hata:</strong> {{ error_message }}</span>
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Görüntü Seç</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="analysis-form" class="analysis-form">
+                {% csrf_token %}
+                
+                <div class="form-group radio-group">
+                    <label class="form-label">{{ form.source_type.label }}</label>
+                    <div class="radio-options">
+                        {% for radio in form.source_type %}
+                            <label for="{{ radio.id_for_label }}" class="radio-label">
+                                {{ radio.tag }}
+                                <span>{{ radio.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.source_type.errors %}
+                        <div class="form-error">{{ form.source_type.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div id="image-file-field" class="form-group hidden">
+                    <label for="{{ form.image_file.id_for_label }}" class="form-label">{{ form.image_file.label }}</label>
+                    <div class="file-upload-wrapper">
+                        <label for="{{ form.image_file.id_for_label }}" class="file-upload-label">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span class="file-name">Dosya seçin</span>
+                        </label>
+                        {{ form.image_file }}
+                    </div>
+                    {% if form.image_file.help_text %}
+                        <small class="form-help">{{ form.image_file.help_text }}</small>
+                    {% endif %}
+                    {% if form.image_file.errors %}
+                        <div class="form-error">{{ form.image_file.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div id="image-url-field" class="form-group hidden">
+                    <label for="{{ form.image_url.id_for_label }}" class="form-label">{{ form.image_url.label }}</label>
+                    {{ form.image_url }}
+                    {% if form.image_url.help_text %}
+                        <small class="form-help">{{ form.image_url.help_text }}</small>
+                    {% endif %}
+                    {% if form.image_url.errors %}
+                        <div class="form-error">{{ form.image_url.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Analiz Et
+                    </button>
+                </div>
+
+                <div id="loading-indicator" class="loading-indicator hidden">
+                    <div class="spinner"></div>
+                    <span>Analiz ediliyor, lütfen bekleyin...</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if analysis_data %}
+        <div class="card results-card">
+            <div class="card-header">
+                <h3>Analiz Sonuçları</h3>
+            </div>
+            <div class="card-body">
+                <div class="result-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Kaynak:</span>
+                        <span class="meta-value">{{ analysis_data.source_type }} - {{ analysis_data.source_input|truncatechars:100 }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Tespit Edilen Nesne:</span>
+                        <span class="meta-value">{{ analysis_data.object }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Anahtar Kelimeler:</span>
+                        <div class="tag-list">
+                            {% for keyword in analysis_data.keywords %}
+                                <span class="tag">{{ keyword }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-summary">
+                    <h4>Özet:</h4>
+                    <div class="summary-content">
+                        {{ analysis_data.summary|linebreaksbr|default:"Özet oluşturulamadı." }}
+                    </div>
+                </div>
+                
+                {% if analysis_data.image_url %}
+                    <div class="result-image">
+                        <h4>Görüntü:</h4>
+                        <div class="image-container">
+                            <img src="{{ analysis_data.image_url }}" alt="Analiz edilen görüntü">
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('analysis-form');
+        const fileField = document.getElementById('image-file-field');
+        const urlField = document.getElementById('image-url-field');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileNameDisplay = document.querySelector('.file-name');
+        
+        // Handle radio button changes
+        document.querySelectorAll('input[name="source_type"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (this.value === 'F') {
+                    fileField.classList.remove('hidden');
+                    urlField.classList.add('hidden');
+                } else if (this.value === 'U') {
+                    urlField.classList.remove('hidden');
+                    fileField.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Set initial state based on selected radio
+        const selectedRadio = document.querySelector('input[name="source_type"]:checked');
+        if (selectedRadio) {
+            if (selectedRadio.value === 'F') {
+                fileField.classList.remove('hidden');
+            } else if (selectedRadio.value === 'U') {
+                urlField.classList.remove('hidden');
+            }
+        }
+        
+        // Show file name when a file is selected
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = 'Dosya seçin';
+                }
+            });
+        }
+        
+        // Show loading indicator on form submit
+        if (form) {
+            form.addEventListener('submit', function() {
+                loadingIndicator.classList.remove('hidden');
+            });
+        }
+    });
+</script>
+{% endblock %}
