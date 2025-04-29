@@ -25,7 +25,7 @@ Django ile geliştirilmiş, yapay zeka destekli görsel analiz ve otomatik araş
   <tr>
     <td><img src="https://i.imgur.com/AUCKF2l.png" alt="Ana Sayfa" /></td>
     <td><img src="https://i.imgur.com/OIP3piy.png" alt="Analiz Sonuçları" /></td>
-    <td><img src="blob:https://imgur.com/a9d6a7a6-fb6a-4f3f-b9fd-41c9f32f1fe1" alt="Geçmiş Aramalar" /></td>
+    <td><img src="https://i.imgur.com/rWJkhTP.png" alt="Geçmiş Aramalar" /></td>
   </tr>
 
 
